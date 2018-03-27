@@ -1,6 +1,6 @@
 const _ = require('lodash');
+const { BLOCKS_PER_BATCH } = require('./constants');
 
-const BLOCKS_PER_BATCH = 20;
 const BUSY_APP_REGEX = /busy\/([0-9.]+)/;
 
 function getBatches(startBlock, blockCount) {

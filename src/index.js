@@ -4,11 +4,9 @@ const Client = require('lightrpc');
 const debug = require('debug')('busy-bot:initializer');
 const { start: startFetcher } = require('./fetcher');
 const { getBatches, filterBusyPosts } = require('./utils');
+const { API, FETCHERS_QUEUE, WEEKLY_BLOCKS } = require('./constants');
 
-const WEEKLY_BLOCKS = 7 * 24 * 60 * 20;
-const FETCHERS_QUEUE = 'FETCHERS_QUEUE';
-
-const client = new Client('https://api.steemit.com');
+const client = new Client(API);
 
 bluebird.promisifyAll(RedisSMQ.prototype);
 bluebird.promisifyAll(client);
