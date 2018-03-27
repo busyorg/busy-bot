@@ -43,7 +43,7 @@ async function start() {
 
   const batches = getBatches(startBlock, blockCount);
 
-  const batchPromises = batches.map(batch =>
+  const batchPromises = batches.map(batch => () =>
     rsmq.sendMessageAsync({
       qname: FETCHERS_QUEUE,
       message: batch.join(' '),
