@@ -1,5 +1,7 @@
-const { start: startFetcher } = require('./fetcher');
-const { start: startInitializer } = require('./initializer');
+const upvoter = require('./upvoter');
+const fetcher = require('./fetcher');
+const initializer = require('./initializer');
 
-startFetcher();
-startInitializer();
+upvoter();
+fetcher();
+initializer();

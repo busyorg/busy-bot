@@ -55,6 +55,4 @@ async function start() {
   rsmq.quit();
 }
 
-module.exports = {
-  start,
-};
+module.exports = start;
