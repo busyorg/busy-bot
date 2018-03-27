@@ -41,9 +41,21 @@ async function fetchBatch(batch) {
 function start() {
   debug('fetcher started');
   const worker = new RSMQWorker(FETCHERS_QUEUE);
-  worker.on('message', function(msg, next, id) {
-    debug('Received message: ' + id);
-    next();
+  worker.on('message', async function(msg, next, id) {
+    debug('Processing message:', id);
+
+    try {
+      const posts = (await fetchBatch(msg.split(' '))).map(tx => {
+        const post = tx.op[1];
+        return `${post.author}/${post.permlink}`;
+      });
+
+      debug(posts);
+
+      next();
+    } catch (err) {
+      debug("Couldn't process message:", id, err);
+    }
   });
   worker.start();
 }
