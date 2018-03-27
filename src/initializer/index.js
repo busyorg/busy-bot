@@ -1,14 +1,11 @@
 const bluebird = require('bluebird');
 const RedisSMQ = require('rsmq');
-const Client = require('lightrpc');
 const debug = require('debug')('busy-bot:initializer');
+const api = require('../api');
 const { getBatches, filterBusyPosts } = require('../utils');
-const { API, FETCHERS_QUEUE, WEEKLY_BLOCKS } = require('../constants');
-
-const client = new Client(API);
+const { FETCHERS_QUEUE, WEEKLY_BLOCKS } = require('../constants');
 
 bluebird.promisifyAll(RedisSMQ.prototype);
-bluebird.promisifyAll(client);
 
 async function fetchBatch(batch) {
   const requests = batch.map(block => ({
@@ -16,7 +13,7 @@ async function fetchBatch(batch) {
     params: [block],
   }));
 
-  return await client
+  return await api
     .sendBatchAsync(requests, null)
     .reduce((a, b) => [...a, ...b], [])
     .filter(filterBusyPosts);
@@ -35,7 +32,7 @@ async function start() {
     debug("didn't create fetchers queue");
   }
 
-  const resp = await client.callAsync('get_dynamic_global_properties', [], null);
+  const resp = await api.callAsync('get_dynamic_global_properties', [], null);
   const lastBlock = resp.last_irreversible_block_num;
 
   const startBlock = lastBlock - WEEKLY_BLOCKS;
