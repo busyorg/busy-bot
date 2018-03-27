@@ -71,6 +71,12 @@ arrify@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-1.0.1.tgz#898508da2226f380df904728456849c1501a4b0d"
 
+async@2.1.x:
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/async/-/async-2.1.5.tgz#e587c68580994ac67fc56ff86d3ac56bdbe810bc"
+  dependencies:
+    lodash "^4.14.0"
+
 babel-code-frame@^6.22.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-code-frame/-/babel-code-frame-6.26.0.tgz#63fd43f7dc1e3bb7ce35947db8fe369a3f58c74b"
@@ -82,6 +88,10 @@ babel-code-frame@^6.22.0:
 balanced-match@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
+
+bindings@*, bindings@^1.2.1:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.3.0.tgz#b346f6ecf6a95f5a815c5839fc7cdb22502f1ed7"
 
 bluebird@^3.5.1:
   version "3.5.1"
@@ -158,6 +168,10 @@ color-name@^1.1.1:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.3.tgz#a7d0558bd89c42f795dd42328f740831ca53bc25"
 
+colors@1.1.x:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/colors/-/colors-1.1.2.tgz#168a4701756b6a7f51a12ce0c97bfa28c084ed63"
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
@@ -218,6 +232,10 @@ doctrine@^2.1.0:
   dependencies:
     esutils "^2.0.2"
 
+double-ended-queue@^2.1.0-0:
+  version "2.1.0-0"
+  resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
+
 encoding@^0.1.11:
   version "0.1.12"
   resolved "https://registry.yarnpkg.com/encoding/-/encoding-0.1.12.tgz#538b66f3ee62cd1ab51ec323829d1f9480c74beb"
@@ -227,6 +245,12 @@ encoding@^0.1.11:
 escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
+
+eslint-config-prettier@^2.9.0:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-2.9.0.tgz#5ecd65174d486c22dff389fe036febf502d468a3"
+  dependencies:
+    get-stdin "^5.0.1"
 
 eslint-scope@^3.7.1:
   version "3.7.1"
@@ -313,6 +337,10 @@ esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
 
+extend@3.0.x:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.1.tgz#a755ea7bc1adfcc5a31ce7e762dbaadc5e636444"
+
 external-editor@^2.0.4:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/external-editor/-/external-editor-2.1.0.tgz#3d026a21b7f95b5726387d4200ac160d372c3b48"
@@ -363,6 +391,10 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
+get-stdin@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/get-stdin/-/get-stdin-5.0.1.tgz#122e161591e21ff4c52530305693f20e6393a398"
+
 glob@^7.0.3, glob@^7.0.5, glob@^7.1.2:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.2.tgz#c19c9df9a028702d678612384a6552404c636d15"
@@ -402,6 +434,20 @@ has-ansi@^2.0.0:
 has-flag@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-3.0.0.tgz#b5d454dc2199ae225699f3467e5a07f3b955bafd"
+
+hiredis@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/hiredis/-/hiredis-0.4.1.tgz#aab4dcfd0fc4cbdb219d268005f2335a3c639e8f"
+  dependencies:
+    bindings "*"
+    nan "^2.0.5"
+
+hiredis@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/hiredis/-/hiredis-0.5.0.tgz#db03a98becd7003d13c260043aceecfacdf59b87"
+  dependencies:
+    bindings "^1.2.1"
+    nan "^2.3.4"
 
 iconv-lite@^0.4.17, iconv-lite@~0.4.13:
   version "0.4.19"
@@ -517,7 +563,7 @@ lightrpc@1.0.0-beta.5:
   dependencies:
     cross-fetch "^1.1.1"
 
-lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0:
+lodash@4.x, lodash@^4.14.0, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0, lodash@^4.6.1:
   version "4.17.5"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
 
@@ -548,6 +594,14 @@ mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
+mpbasic@0.0.x:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/mpbasic/-/mpbasic-0.0.18.tgz#f459ba1dc95cca13e5f8003882700d0926a53c00"
+  dependencies:
+    colors "1.1.x"
+    extend "3.0.x"
+    lodash "4.x"
+
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -555,6 +609,10 @@ ms@2.0.0:
 mute-stream@0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.7.tgz#3075ce93bc21b8fab43e1bc4da7e8115ed1e7bab"
+
+nan@^2.0.5, nan@^2.3.4:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -652,6 +710,22 @@ readable-stream@^2.2.2:
     string_decoder "~1.0.3"
     util-deprecate "~1.0.1"
 
+redis-commands@^1.2.0:
+  version "1.3.5"
+  resolved "https://registry.yarnpkg.com/redis-commands/-/redis-commands-1.3.5.tgz#4495889414f1e886261180b1442e7295602d83a2"
+
+redis-parser@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/redis-parser/-/redis-parser-2.6.0.tgz#52ed09dacac108f1a631c07e9b69941e7a19504b"
+
+redis@^2.5.3, redis@^2.8.0:
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/redis/-/redis-2.8.0.tgz#202288e3f58c49f6079d97af7a10e1303ae14b02"
+  dependencies:
+    double-ended-queue "^2.1.0-0"
+    redis-commands "^1.2.0"
+    redis-parser "^2.6.0"
+
 regexpp@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-1.0.1.tgz#d857c3a741dce075c2848dcb019a0a975b190d43"
@@ -679,6 +753,33 @@ rimraf@^2.2.8:
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
   dependencies:
     glob "^7.0.5"
+
+rsmq-worker@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/rsmq-worker/-/rsmq-worker-0.5.2.tgz#8ec4f9a119d6ec09478bf9c3b5349a63b4ba4f48"
+  dependencies:
+    async "2.1.x"
+    lodash "4.x"
+    mpbasic "0.0.x"
+    rsmq "0.7.x"
+
+rsmq@0.7.x:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/rsmq/-/rsmq-0.7.2.tgz#a0d1ee0058897dc48a2e90802fb664cb27e5c935"
+  dependencies:
+    lodash "^4.6.1"
+    redis "^2.5.3"
+  optionalDependencies:
+    hiredis "^0.4.1"
+
+rsmq@^0.8.3:
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/rsmq/-/rsmq-0.8.3.tgz#a1b64770d796c8143fa5e542d10d9f8c1b5ee14f"
+  dependencies:
+    lodash "^4.17.4"
+    redis "^2.8.0"
+  optionalDependencies:
+    hiredis "^0.5.0"
 
 run-async@^2.2.0:
   version "2.3.0"
