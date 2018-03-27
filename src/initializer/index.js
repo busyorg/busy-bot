@@ -2,21 +2,24 @@ const bluebird = require('bluebird');
 const RedisSMQ = require('rsmq');
 const debug = require('debug')('busy-bot:initializer');
 const api = require('../api');
-const { getBatches, filterBusyPosts } = require('../utils');
-const { FETCHERS_QUEUE, WEEKLY_BLOCKS } = require('../constants');
+const { FETCHERS_QUEUE, WEEKLY_BLOCKS, BLOCKS_PER_BATCH } = require('../constants');
 
 bluebird.promisifyAll(RedisSMQ.prototype);
 
-async function fetchBatch(batch) {
-  const requests = batch.map(block => ({
-    method: 'get_ops_in_block',
-    params: [block],
-  }));
+function getBatches(startBlock, blockCount) {
+  const batches = [];
 
-  return await api
-    .sendBatchAsync(requests, null)
-    .reduce((a, b) => [...a, ...b], [])
-    .filter(filterBusyPosts);
+  let batch = [];
+  for (let i = 0; i < blockCount; i++) {
+    batch.push(startBlock + i);
+
+    if (batch.length === BLOCKS_PER_BATCH || i === blockCount - 1) {
+      batches.push(batch);
+      batch = [];
+    }
+  }
+
+  return batches;
 }
 
 async function start() {
