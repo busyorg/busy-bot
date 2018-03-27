@@ -9,6 +9,18 @@ const client = new Client('https://api.steemit.com');
 
 bluebird.promisifyAll(client);
 
+async function fetchBatch(batch) {
+  const requests = batch.map(block => ({
+    method: 'get_ops_in_block',
+    params: [block],
+  }));
+
+  return await client
+    .sendBatchAsync(requests, null)
+    .reduce((a, b) => [...a, ...b], [])
+    .filter(filterBusyPosts);
+}
+
 async function start() {
   const resp = await client.callAsync('get_dynamic_global_properties', [], null);
   const lastBlock = resp.last_irreversible_block_num;
@@ -18,11 +30,6 @@ async function start() {
 
   const batches = getBatches(startBlock, blockCount);
   debug(`got ${batches.length} of batches`);
-
-  const transactions = await client
-    .callAsync('get_ops_in_block', [startBlock], null)
-    .filter(filterBusyPosts);
-  debug(transactions.length);
 }
 
 start();
