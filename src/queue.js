@@ -1,18 +1,21 @@
 const debug = require('debug')('busy-bot:queue');
 const bluebird = require('bluebird');
 const RedisSMQ = require('rsmq');
-const { FETCHERS_QUEUE, UPVOTERS_QUEUE } = require('./constants');
+const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE, UPVOTERS_QUEUE } = require('./constants');
 
 bluebird.promisifyAll(RedisSMQ.prototype);
 
 async function createQueue() {
   const rsmq = new RedisSMQ();
-
   try {
-    const fetchersResult = await rsmq.createQueueAsync({ qname: FETCHERS_QUEUE });
+    const streamFetchersResult = await rsmq.createQueueAsync({ qname: STREAM_FETCHERS_QUEUE });
+    const pastFetchersResult = await rsmq.createQueueAsync({ qname: PAST_FETCHERS_QUEUE });
     const upvotersResult = await rsmq.createQueueAsync({ qname: UPVOTERS_QUEUE });
-    if (fetchersResult === 1) {
-      debug('created fetchers queue');
+    if (streamFetchersResult === 1) {
+      debug('created stream fetchers queue');
+    }
+    if (pastFetchersResult === 1) {
+      debug('created past fetchers queue');
     }
     if (upvotersResult === 1) {
       debug('created upvoters queue');
@@ -22,16 +25,17 @@ async function createQueue() {
   }
 
   return {
-    queueBatch: batch =>
+    queueStreamBatch: batch =>
       rsmq.sendMessageAsync({
-        qname: FETCHERS_QUEUE,
+        qname: STREAM_FETCHERS_QUEUE,
         message: batch.join(' '),
       }),
-    queueUpvote: post =>
+    queuePastBatch: batch =>
       rsmq.sendMessageAsync({
-        qname: UPVOTERS_QUEUE,
-        message: post,
+        qname: PAST_FETCHERS_QUEUE,
+        message: batch.join(' '),
       }),
+    queueUpvote: post => rsmq.sendMessageAsync({ qname: UPVOTERS_QUEUE, message: post }),
   };
 }
 

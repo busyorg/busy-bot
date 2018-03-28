@@ -1,14 +1,12 @@
 const debug = require('debug')('busy-bot:fetcher');
 const RSMQWorker = require('rsmq-worker');
-const { FETCHERS_QUEUE } = require('../constants');
+const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
 const fetchBatch = require('./fetchBatch');
 
-async function start(queue) {
-  debug('fetcher started');
-
-  const worker = new RSMQWorker(FETCHERS_QUEUE);
+function worker(queue, name) {
+  const worker = new RSMQWorker(name);
   worker.on('message', async function(msg, next, id) {
-    debug('Processing message:', id);
+    debug(name, 'Processing message:', id);
     try {
       const posts = (await fetchBatch(msg.split(' '))).map(tx => {
         const post = tx.op[1];
@@ -24,6 +22,13 @@ async function start(queue) {
     }
   });
   worker.start();
+}
+
+function start(queue) {
+  debug('fetcher started');
+
+  worker(queue, STREAM_FETCHERS_QUEUE);
+  worker(queue, PAST_FETCHERS_QUEUE);
 }
 
 module.exports = start;

@@ -11,5 +11,6 @@ module.exports = {
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
     semi: ['error', 'always'],
+    'no-constant-condition': 0,
   },
 };
