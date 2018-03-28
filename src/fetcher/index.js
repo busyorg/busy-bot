@@ -1,12 +1,8 @@
 const _ = require('lodash');
-const bluebird = require('bluebird');
 const debug = require('debug')('busy-bot:fetcher');
-const RedisSMQ = require('rsmq');
 const RSMQWorker = require('rsmq-worker');
 const api = require('../api');
-const { FETCHERS_QUEUE, UPVOTERS_QUEUE } = require('../constants');
-
-bluebird.promisifyAll(RedisSMQ.prototype);
+const { FETCHERS_QUEUE } = require('../constants');
 
 const BUSY_APP_REGEX = /busy\/([0-9.]+)/;
 
@@ -42,19 +38,8 @@ async function fetchBatch(batch) {
     .filter(filterBusyPosts);
 }
 
-async function start() {
+async function start(queue) {
   debug('fetcher started');
-
-  const rsmq = new RedisSMQ();
-
-  try {
-    const queueResult = await rsmq.createQueueAsync({ qname: UPVOTERS_QUEUE });
-    if (queueResult === 1) {
-      debug('created upvoters queue');
-    }
-  } catch (err) {
-    debug("didn't create upvoters queue");
-  }
 
   const worker = new RSMQWorker(FETCHERS_QUEUE);
   worker.on('message', async function(msg, next, id) {
@@ -65,14 +50,9 @@ async function start() {
         return `${post.author}/${post.permlink}`;
       });
 
-      const postsPromises = posts.map(post =>
-        rsmq.sendMessageAsync({
-          qname: UPVOTERS_QUEUE,
-          message: post,
-        }),
-      );
-
+      const postsPromises = posts.map(queue.queueUpvote);
       await Promise.all(postsPromises);
+
       next();
     } catch (err) {
       debug("Couldn't process message:", id, err);
