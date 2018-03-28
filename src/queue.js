@@ -8,13 +8,17 @@ bluebird.promisifyAll(RedisSMQ.prototype);
 async function createQueue() {
   const rsmq = new RedisSMQ();
 
-  const fetchersResult = await rsmq.createQueueAsync({ qname: FETCHERS_QUEUE });
-  const upvotersResult = await rsmq.createQueueAsync({ qname: UPVOTERS_QUEUE });
-  if (fetchersResult === 1) {
-    debug('created fetchers queue');
-  }
-  if (upvotersResult === 1) {
-    debug('created upvoters queue');
+  try {
+    const fetchersResult = await rsmq.createQueueAsync({ qname: FETCHERS_QUEUE });
+    const upvotersResult = await rsmq.createQueueAsync({ qname: UPVOTERS_QUEUE });
+    if (fetchersResult === 1) {
+      debug('created fetchers queue');
+    }
+    if (upvotersResult === 1) {
+      debug('created upvoters queue');
+    }
+  } catch (err) {
+    debug('new queues not created');
   }
 
   return {
