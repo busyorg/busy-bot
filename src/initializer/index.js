@@ -1,22 +1,7 @@
 const debug = require('debug')('busy-bot:initializer');
 const api = require('../api');
-const { WEEKLY_BLOCKS, BLOCKS_PER_BATCH } = require('../constants');
-
-function getBatches(startBlock, blockCount) {
-  const batches = [];
-
-  let batch = [];
-  for (let i = 0; i < blockCount; i++) {
-    batch.push(startBlock + i);
-
-    if (batch.length === BLOCKS_PER_BATCH || i === blockCount - 1) {
-      batches.push(batch);
-      batch = [];
-    }
-  }
-
-  return batches;
-}
+const { WEEKLY_BLOCKS } = require('../constants');
+const getBatches = require('./getBatches');
 
 async function start(queue) {
   debug('initializer started');
