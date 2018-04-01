@@ -3,7 +3,7 @@ const RSMQWorker = require('rsmq-worker');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
 const fetchBatch = require('./fetchBatch');
 
-function worker(queue, name) {
+function worker(queue, name, queueUpvote) {
   const worker = new RSMQWorker(name);
   worker.on('message', async function(msg, next, id) {
     debug(name, 'Processing message:', id);
@@ -13,7 +13,7 @@ function worker(queue, name) {
         return `${post.author}/${post.permlink}`;
       });
 
-      const postsPromises = posts.map(queue.queueUpvote);
+      const postsPromises = posts.map(queueUpvote);
       await Promise.all(postsPromises);
 
       next();
@@ -27,8 +27,8 @@ function worker(queue, name) {
 function start(queue) {
   debug('fetcher started');
 
-  worker(queue, STREAM_FETCHERS_QUEUE);
-  worker(queue, PAST_FETCHERS_QUEUE);
+  worker(queue, STREAM_FETCHERS_QUEUE, queue.queueStreamUpvote);
+  worker(queue, PAST_FETCHERS_QUEUE, queue.queuePastUpvote);
 }
 
 module.exports = start;
