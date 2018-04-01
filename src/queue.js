@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const debug = require('debug')('busy-bot:queue');
 const bluebird = require('bluebird');
 const RedisSMQ = require('rsmq');
@@ -38,6 +39,13 @@ async function createQueue() {
   }
 
   return {
+    stat: async () => {
+      const queues = await rsmq.listQueuesAsync();
+      return _.zipObject(
+        queues,
+        await Promise.all(queues.map(queue => rsmq.getQueueAttributesAsync({ qname: queue }))),
+      );
+    },
     queueStreamBatch: batch =>
       rsmq.sendMessageAsync({
         qname: STREAM_FETCHERS_QUEUE,
