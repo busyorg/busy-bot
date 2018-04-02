@@ -29,7 +29,7 @@ async function getIsVoted(username, permlink) {
   return res.active_votes.filter(vote => vote.voter === 'busy.org').length !== 0;
 }
 
-function createProcessUpvote() {
+function createProcessUpvote(blacklistUser) {
   return async (msg, next) => {
     try {
       await retry(
@@ -46,6 +46,8 @@ function createProcessUpvote() {
             return;
           }
 
+          await blacklistUser(username);
+
           debug('Upvoting post', msg, percent);
           next();
         },
@@ -57,20 +59,20 @@ function createProcessUpvote() {
   };
 }
 
-function worker(rsmq, name) {
+function worker(queue, name) {
   const streamWorker = new RSMQWorker(name, {
-    rsmq,
+    rsmq: queue.rsmq,
     timeout: 10000,
   });
-  streamWorker.on('message', createProcessUpvote());
+  streamWorker.on('message', createProcessUpvote(queue.blacklistUser));
   streamWorker.start();
 }
 
 function start(queue) {
   debug('upvoter started');
 
-  worker(queue.rsmq, STREAM_UPVOTERS_QUEUE);
-  worker(queue.rsmq, PAST_UPVOTERS_QUEUE);
+  worker(queue, STREAM_UPVOTERS_QUEUE);
+  worker(queue, PAST_UPVOTERS_QUEUE);
 }
 
 module.exports = start;

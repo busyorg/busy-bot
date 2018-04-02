@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('debug')('busy-bot:queue');
 const bluebird = require('bluebird');
+const redis = require('redis');
 const RedisSMQ = require('rsmq');
 const {
   STREAM_FETCHERS_QUEUE,
@@ -8,12 +9,16 @@ const {
   STREAM_UPVOTERS_QUEUE,
   PAST_UPVOTERS_QUEUE,
   UPVOTE_DELAY_SECONDS,
+  BLACKLIST_SECONDS,
 } = require('./constants');
 
+bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(RedisSMQ.prototype);
 
 async function createQueue() {
-  const rsmq = new RedisSMQ();
+  const client = redis.createClient();
+
+  const rsmq = new RedisSMQ({ client });
   try {
     const streamFetchersResult = await rsmq.createQueueAsync({ qname: STREAM_FETCHERS_QUEUE });
     if (streamFetchersResult === 1) {
@@ -40,6 +45,9 @@ async function createQueue() {
 
   return {
     rsmq,
+    blacklistUser: username => client.setAsync(`${username}:voted`, true, 'EX', BLACKLIST_SECONDS),
+    setCurrentBlock: block => client.setAsync('current_block', block),
+    getCurrentBlock: () => client.getAsync('current_block'),
     stat: async () => {
       const queues = await rsmq.listQueuesAsync();
       return _.zipObject(

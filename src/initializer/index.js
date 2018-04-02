@@ -17,6 +17,8 @@ async function processCurrentBlocks(queue, block) {
       const batchPromises = batches.map(queue.queueStreamBatch);
       await Promise.all(batchPromises);
 
+      await queue.setCurrentBlock(currentBlock);
+
       lastBlock = currentBlock;
     } catch (err) {
       debug("Couldn't fetch current block.");
@@ -24,8 +26,8 @@ async function processCurrentBlocks(queue, block) {
   }
 }
 
-async function processPastBlocks(queue, lastBlock) {
-  const startBlock = lastBlock - WEEKLY_BLOCKS;
+async function processPastBlocks(queue, lastBlock, savedBlock) {
+  const startBlock = Math.max(lastBlock - WEEKLY_BLOCKS, savedBlock);
   const blockCount = lastBlock - startBlock;
 
   const batches = getBatches(startBlock, blockCount);
@@ -41,10 +43,13 @@ async function start(queue) {
   while (!initialized) {
     try {
       const lastBlock = await getLastIrreversibleBlock();
-      debug('last irreversible block', lastBlock);
+      const savedBlock = (await queue.getCurrentBlock()) || 0;
+      await queue.setCurrentBlock(lastBlock);
+
+      debug('last irreversible block:', lastBlock, 'saved block:', savedBlock);
 
       processCurrentBlocks(queue, lastBlock);
-      processPastBlocks(queue, lastBlock);
+      processPastBlocks(queue, lastBlock, savedBlock);
 
       initialized = true;
     } catch (err) {
