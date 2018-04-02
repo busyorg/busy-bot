@@ -39,6 +39,7 @@ async function createQueue() {
   }
 
   return {
+    rsmq,
     stat: async () => {
       const queues = await rsmq.listQueuesAsync();
       return _.zipObject(

@@ -28,8 +28,9 @@ function createProcessBatch(name, queueUpvote) {
   };
 }
 
-function worker(name, queueUpvote) {
+function worker(rsmq, name, queueUpvote) {
   const worker = new RSMQWorker(name, {
+    rsmq,
     timeout: 10000,
   });
   worker.on('message', createProcessBatch(name, queueUpvote));
@@ -39,8 +40,8 @@ function worker(name, queueUpvote) {
 function start(queue) {
   debug('fetcher started');
 
-  worker(STREAM_FETCHERS_QUEUE, queue.queueStreamUpvote);
-  worker(PAST_FETCHERS_QUEUE, queue.queuePastUpvote);
+  worker(queue.rsmq, STREAM_FETCHERS_QUEUE, queue.queueStreamUpvote);
+  worker(queue.rsmq, PAST_FETCHERS_QUEUE, queue.queuePastUpvote);
 }
 
 module.exports = start;

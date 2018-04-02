@@ -9,7 +9,7 @@ const app = express();
 async function start() {
   const queue = await createQueue();
 
-  upvoter();
+  upvoter(queue);
   fetcher(queue);
   initializer(queue);
 

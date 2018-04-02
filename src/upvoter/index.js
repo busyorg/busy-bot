@@ -57,19 +57,20 @@ function createProcessUpvote() {
   };
 }
 
-function worker(name) {
+function worker(rsmq, name) {
   const streamWorker = new RSMQWorker(name, {
+    rsmq,
     timeout: 10000,
   });
   streamWorker.on('message', createProcessUpvote());
   streamWorker.start();
 }
 
-function start() {
+function start(queue) {
   debug('upvoter started');
 
-  worker(STREAM_UPVOTERS_QUEUE);
-  worker(PAST_UPVOTERS_QUEUE);
+  worker(queue.rsmq, STREAM_UPVOTERS_QUEUE);
+  worker(queue.rsmq, PAST_UPVOTERS_QUEUE);
 }
 
 module.exports = start;
