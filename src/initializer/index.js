@@ -7,16 +7,20 @@ const getBatches = require('./getBatches');
 async function processCurrentBlocks(queue, block) {
   let lastBlock = block;
   while (true) {
-    await sleep(SLEEP_TIME);
+    try {
+      await sleep(SLEEP_TIME);
 
-    const currentBlock = await getLastIrreversibleBlock();
+      const currentBlock = await getLastIrreversibleBlock();
 
-    const batches = getBatches(lastBlock, currentBlock - lastBlock);
+      const batches = getBatches(lastBlock, currentBlock - lastBlock);
 
-    const batchPromises = batches.map(queue.queueStreamBatch);
-    await Promise.all(batchPromises);
+      const batchPromises = batches.map(queue.queueStreamBatch);
+      await Promise.all(batchPromises);
 
-    lastBlock = currentBlock;
+      lastBlock = currentBlock;
+    } catch (err) {
+      debug("Couldn't fetch current block.");
+    }
   }
 }
 
@@ -31,13 +35,22 @@ async function processPastBlocks(queue, lastBlock) {
 }
 
 async function start(queue) {
+  let initialized = false;
+
   debug('initializer started');
+  while (!initialized) {
+    try {
+      const lastBlock = await getLastIrreversibleBlock();
+      debug('last irreversible block', lastBlock);
 
-  const lastBlock = await getLastIrreversibleBlock();
-  debug('last irreversible block', lastBlock);
+      processCurrentBlocks(queue, lastBlock);
+      processPastBlocks(queue, lastBlock);
 
-  processCurrentBlocks(queue, lastBlock);
-  processPastBlocks(queue, lastBlock);
+      initialized = true;
+    } catch (err) {
+      debug('failed to initialize. retrying...');
+    }
+  }
 }
 
 module.exports = start;

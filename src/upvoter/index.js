@@ -1,5 +1,6 @@
 const debug = require('debug')('busy-bot:upvoter');
 const fetch = require('node-fetch');
+const retry = require('async-retry');
 const RSMQWorker = require('rsmq-worker');
 const api = require('../api');
 const { STREAM_UPVOTERS_QUEUE, PAST_UPVOTERS_QUEUE } = require('../constants');
@@ -31,28 +32,35 @@ async function getIsVoted(username, permlink) {
 function createProcessUpvote() {
   return async (msg, next) => {
     try {
-      const [username, permlink] = msg.split('/');
+      await retry(
+        async () => {
+          const [username, permlink] = msg.split('/');
 
-      const [voted, percent] = await Promise.all([
-        getIsVoted(username, permlink),
-        getVotePercent(username),
-      ]);
+          const [voted, percent] = await Promise.all([
+            getIsVoted(username, permlink),
+            getVotePercent(username),
+          ]);
 
-      if (voted || percent === 0) {
-        next();
-        return;
-      }
+          if (voted || percent === 0) {
+            next();
+            return;
+          }
 
-      debug('Upvoting post', msg, percent);
-      next();
+          debug('Upvoting post', msg, percent);
+          next();
+        },
+        { retries: 5 },
+      );
     } catch (err) {
-      return;
+      debug("Couldn't upvote post: ", msg);
     }
   };
 }
 
 function worker(name) {
-  const streamWorker = new RSMQWorker(name);
+  const streamWorker = new RSMQWorker(name, {
+    timeout: 10000,
+  });
   streamWorker.on('message', createProcessUpvote());
   streamWorker.start();
 }

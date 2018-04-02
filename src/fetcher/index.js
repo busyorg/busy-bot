@@ -1,29 +1,37 @@
 const debug = require('debug')('busy-bot:fetcher');
 const RSMQWorker = require('rsmq-worker');
+const retry = require('async-retry');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
 const fetchBatch = require('./fetchBatch');
 
 function createProcessBatch(name, queueUpvote) {
   return async (msg, next, id) => {
-    debug(name, 'Processing message:', id);
     try {
-      const posts = (await fetchBatch(msg.split(' '))).map(tx => {
-        const post = tx.op[1];
-        return `${post.author}/${post.permlink}`;
-      });
+      await retry(
+        async () => {
+          debug(name, 'Processing message:', id);
+          const posts = (await fetchBatch(msg.split(' '))).map(tx => {
+            const post = tx.op[1];
+            return `${post.author}/${post.permlink}`;
+          });
 
-      const postsPromises = posts.map(queueUpvote);
-      await Promise.all(postsPromises);
+          const postsPromises = posts.map(queueUpvote);
+          await Promise.all(postsPromises);
 
-      next();
+          next();
+        },
+        { retries: 5 },
+      );
     } catch (err) {
-      debug("Couldn't process message:", id, err);
+      debug(name, "Couldn't fetch blocks. Message", id);
     }
   };
 }
 
 function worker(name, queueUpvote) {
-  const worker = new RSMQWorker(name);
+  const worker = new RSMQWorker(name, {
+    timeout: 10000,
+  });
   worker.on('message', createProcessBatch(name, queueUpvote));
   worker.start();
 }
