@@ -16,7 +16,7 @@ bluebird.promisifyAll(redis.RedisClient.prototype);
 bluebird.promisifyAll(RedisSMQ.prototype);
 
 async function createQueue() {
-  const client = redis.createClient();
+  const client = redis.createClient(process.env.REDIS_URL);
 
   const rsmq = new RedisSMQ({ client });
   try {
