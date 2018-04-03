@@ -4,6 +4,8 @@ const upvoter = require('./upvoter');
 const fetcher = require('./fetcher');
 const initializer = require('./initializer');
 
+const PORT = process.env.PORT || 3000;
+
 const app = express();
 
 async function start() {
@@ -15,7 +17,7 @@ async function start() {
 
   app.get('/', async (req, res) => res.send(await queue.stat()));
 
-  app.listen(3000);
+  app.listen(PORT);
 }
 
 start();

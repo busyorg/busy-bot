@@ -53,13 +53,13 @@ function createProcessUpvote(blacklistUser) {
             return;
           }
 
-          await steem.broadcast.voteAsync(
-            STEEM_POSTING_WIF,
-            STEEM_USERNAME,
-            author,
-            permlink,
-            weight,
-          );
+          // await steem.broadcast.voteAsync(
+          //   STEEM_POSTING_WIF,
+          //   STEEM_USERNAME,
+          //   author,
+          //   permlink,
+          //   weight,
+          // );
           await blacklistUser(author);
 
           debug('Upvoted post', msg, weight);
