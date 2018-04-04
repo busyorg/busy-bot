@@ -4,71 +4,73 @@ const retry = require('async-retry');
 const RSMQWorker = require('rsmq-worker');
 const steem = require('steem');
 const api = require('../api');
+const getAccounts = require('./getAccounts');
 const { STREAM_UPVOTERS_QUEUE, PAST_UPVOTERS_QUEUE } = require('../constants');
 
 const STEEM_API = process.env.STEEM_API || 'https://api.steemit.com';
-const STEEM_USERNAME = process.env.STEEM_USERNAME;
-const STEEM_POSTING_WIF = process.env.STEEM_POSTING_WIF;
-
-const MIN_VESTS = process.env.MIN_VESTS || 20000000;
-const MAX_VESTS = process.env.MAX_VESTS || 4000000000000;
-const LIMIT_VESTS = process.env.LIMIT_VESTS || 10000000000000;
-const MIN_PERCENT = process.env.MIN_PERCENT || 6;
-const MAX_PERCENT = process.env.MAX_PERCENT || 2500;
 
 steem.api.setOptions({ url: STEEM_API });
 
-async function getVoteWeight(username) {
+async function getVoteWeight(username, account) {
   const mvests = await fetch(`https://steemdb.com/api/accounts?account[]=${username}`)
     .then(res => res.json())
     .then(res => res[0].followers_mvest);
 
-  if (mvests < MIN_VESTS || mvests > LIMIT_VESTS) return 0;
+  if (mvests < account.minVests || mvests > account.limitVests) return 0;
 
-  const percent = parseInt(10000 / MAX_VESTS * mvests);
+  const percent = parseInt(10000 / account.maxVests * mvests);
 
-  return Math.min(Math.max(percent, MIN_PERCENT), MAX_PERCENT);
+  return Math.min(Math.max(percent, account.minPercent), account.maxPercent);
 }
 
-async function getIsVoted(username, permlink) {
+async function getIsVoted(username, permlink, account) {
   const res = await api.callAsync('get_content', [username, permlink], null);
 
-  return res.active_votes.filter(vote => vote.voter === 'busy.org').length !== 0;
+  return res.active_votes.filter(vote => vote.voter === account.username).length !== 0;
+}
+
+async function upvotePost(author, permlink, account) {
+  const TAG = `[${author}/${permlink}]`;
+  debug(TAG, 'started upvoting');
+  const [voted, weight] = await Promise.all([
+    getIsVoted(author, permlink, account),
+    getVoteWeight(author, account),
+  ]);
+
+  if (voted || weight === 0) {
+    debug(TAG, 'skipped', 'voted', voted, 'weight', weight);
+    return;
+  }
+  await steem.broadcast.voteAsync(account.wif, account.username, author, permlink, weight);
+  debug(TAG, 'upvoted by', account.username, 'with', weight);
 }
 
 function createProcessUpvote(blacklistUser) {
+  const accounts = getAccounts();
+
   return async (msg, next) => {
     try {
       await retry(
         async () => {
-          const [author, permlink] = msg.split('/');
-
-          const [voted, weight] = await Promise.all([
-            getIsVoted(author, permlink),
-            getVoteWeight(author),
-          ]);
-
-          if (voted || weight === 0) {
+          if (accounts.length === 0) {
+            debug('no accounts loaded. did you set STEEM_ACCOUNTS variable?');
             next();
             return;
           }
 
-          await steem.broadcast.voteAsync(
-            STEEM_POSTING_WIF,
-            STEEM_USERNAME,
-            author,
-            permlink,
-            weight,
-          );
-          await blacklistUser(author);
+          const [author, permlink] = msg.split('/');
 
-          debug('Upvoted post', msg, weight);
+          const votes = accounts.map(account => upvotePost(author, permlink, account));
+
+          await Promise.all(votes);
+
+          blacklistUser(author);
           next();
         },
         { retries: 5 },
       );
     } catch (err) {
-      debug("Couldn't upvote post: ", msg);
+      debug("Couldn't upvote post: ", msg, err);
     }
   };
 }
@@ -76,7 +78,7 @@ function createProcessUpvote(blacklistUser) {
 function worker(queue, name) {
   const streamWorker = new RSMQWorker(name, {
     rsmq: queue.rsmq,
-    timeout: 10000,
+    timeout: 30000,
   });
   streamWorker.on('message', createProcessUpvote(queue.blacklistUser));
   streamWorker.start();
