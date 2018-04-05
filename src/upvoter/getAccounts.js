@@ -1,5 +1,8 @@
+const debug = require('debug')('busy-bot:upvoter');
+
 function getAccounts() {
-  const accounts = JSON.parse(process.env.STEEM_ACCOUNTS || "[]");
+  debug('STEEM_ACCOUNTS', process.env.STEEM_ACCOUNTS);
+  const accounts = JSON.parse(process.env.STEEM_ACCOUNTS || '[]');
 
   return accounts.map(account => ({
     username: account.username,
