@@ -23,29 +23,43 @@ async function getVoteWeight(username, account) {
   return Math.min(Math.max(percent, account.minPercent), account.maxPercent);
 }
 
-async function getIsVoted(username, permlink, account) {
-  const res = await api.callAsync('get_content', [username, permlink], null);
-
-  return res.active_votes.filter(vote => vote.voter === account.username).length !== 0;
+function getPost(username, permlink) {
+  return api.callAsync('get_content', [username, permlink], null);
 }
 
-async function upvotePost(author, permlink, account) {
+function getIsVoted(post, account) {
+  return post.active_votes.filter(vote => vote.voter === account.username).length !== 0;
+}
+
+async function upvotePost(author, permlink, account, queue) {
   const TAG = `[${author}/${permlink}]`;
   debug(TAG, 'started upvoting');
-  const [voted, weight] = await Promise.all([
-    getIsVoted(author, permlink, account),
+
+  const blacklisted = await queue.isBlacklisted(author);
+
+  if (blacklisted) {
+    debug(TAG, author, 'is blacklisted');
+    return;
+  }
+
+  const [post, weight] = await Promise.all([
+    getPost(author, permlink),
     getVoteWeight(author, account),
   ]);
+
+  const voted = getIsVoted(post, account);
 
   if (voted || weight === 0) {
     debug(TAG, 'skipped', 'voted', voted, 'weight', weight);
     return;
   }
+
   await steem.broadcast.voteAsync(account.wif, account.username, author, permlink, weight);
+  queue.blacklistUser(post.author, new Date(`${post.created}Z`));
   debug(TAG, 'upvoted by', account.username, 'with', weight);
 }
 
-function createProcessUpvote(blacklistUser) {
+function createProcessUpvote(queue) {
   const accounts = getAccounts();
 
   return async (msg, next) => {
@@ -60,11 +74,9 @@ function createProcessUpvote(blacklistUser) {
 
           const [author, permlink] = msg.split('/');
 
-          const votes = accounts.map(account => upvotePost(author, permlink, account));
+          const votes = accounts.map(account => upvotePost(author, permlink, account, queue));
 
           await Promise.all(votes);
-
-          blacklistUser(author);
           next();
         },
         { retries: 5 },
@@ -80,7 +92,7 @@ function worker(queue, name) {
     rsmq: queue.rsmq,
     timeout: 30000,
   });
-  streamWorker.on('message', createProcessUpvote(queue.blacklistUser));
+  streamWorker.on('message', createProcessUpvote(queue));
   streamWorker.start();
 }
 

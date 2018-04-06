@@ -45,7 +45,16 @@ async function createQueue() {
 
   return {
     rsmq,
-    blacklistUser: username => client.setAsync(`${username}:voted`, true, 'EX', BLACKLIST_SECONDS),
+    blacklistUser: (username, postTime) => {
+      const timeSincePost = Math.floor((Date.now() - postTime) / 1000);
+
+      const expiryTime = BLACKLIST_SECONDS - timeSincePost;
+
+      if (expiryTime > 0) {
+        client.setAsync(`${username}:voted`, true, 'EX', expiryTime);
+      }
+    },
+    isBlacklisted: username => client.getAsync(`${username}:voted`),
     setCurrentBlock: block => client.setAsync('current_block', block),
     getCurrentBlock: () => client.getAsync('current_block'),
     stat: async () => {
