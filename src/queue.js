@@ -45,9 +45,7 @@ async function createQueue() {
 
   return {
     rsmq,
-    blacklistUser: (username, postTime) => {
-      const timeSincePost = Math.floor((Date.now() - postTime) / 1000);
-
+    blacklistUser: (username, timeSincePost) => {
       const expiryTime = BLACKLIST_SECONDS - timeSincePost;
 
       if (expiryTime > 0) {

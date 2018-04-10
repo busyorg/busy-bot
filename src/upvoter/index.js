@@ -1,3 +1,4 @@
+const moment = require('moment');
 const debug = require('debug')('busy-bot:upvoter');
 const fetch = require('node-fetch');
 const retry = require('async-retry');
@@ -5,7 +6,7 @@ const RSMQWorker = require('rsmq-worker');
 const steem = require('steem');
 const api = require('../api');
 const getAccounts = require('./getAccounts');
-const { STREAM_UPVOTERS_QUEUE, PAST_UPVOTERS_QUEUE } = require('../constants');
+const { POST_TO_OLD_SECONDS, STREAM_UPVOTERS_QUEUE, PAST_UPVOTERS_QUEUE } = require('../constants');
 
 const STEEM_API = process.env.STEEM_API || 'https://api.steemit.com';
 
@@ -47,16 +48,20 @@ async function upvotePost(author, permlink, account, queue) {
     getVoteWeight(author, account),
   ]);
 
+  const timeSincePost = Math.floor(moment().diff(`${post.created}Z`) / 1000);
+
+  const tooOld = timeSincePost > POST_TO_OLD_SECONDS;
+
   const voted = getIsVoted(post, account);
 
-  if (voted || weight === 0) {
-    debug(TAG, 'skipped', 'voted', voted, 'weight', weight);
+  if (voted || weight === 0 || tooOld) {
+    debug(TAG, 'skipped', 'voted', voted, 'weight', weight, 'too old', tooOld);
     return;
   }
 
   try {
     await steem.broadcast.voteAsync(account.wif, account.username, author, permlink, weight);
-    queue.blacklistUser(post.author, new Date(`${post.created}Z`));
+    queue.blacklistUser(post.author, timeSincePost);
     debug(TAG, 'upvoted by', account.username, 'with', weight);
   } catch (err) {
     if (err.message.indexOf('STEEM_UPVOTE_LOCKOUT') !== -1) {
