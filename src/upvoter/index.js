@@ -54,9 +54,17 @@ async function upvotePost(author, permlink, account, queue) {
     return;
   }
 
-  await steem.broadcast.voteAsync(account.wif, account.username, author, permlink, weight);
-  queue.blacklistUser(post.author, new Date(`${post.created}Z`));
-  debug(TAG, 'upvoted by', account.username, 'with', weight);
+  try {
+    await steem.broadcast.voteAsync(account.wif, account.username, author, permlink, weight);
+    queue.blacklistUser(post.author, new Date(`${post.created}Z`));
+    debug(TAG, 'upvoted by', account.username, 'with', weight);
+  } catch (err) {
+    if (err.message.indexOf('STEEM_UPVOTE_LOCKOUT') !== -1) {
+      debug(TAG, 'payout locked, skipping.');
+      return;
+    }
+    throw err;
+  }
 }
 
 function createProcessUpvote(queue) {
