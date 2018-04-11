@@ -33,7 +33,7 @@ function getIsVoted(post, account) {
 }
 
 async function upvotePost(author, permlink, account, queue) {
-  const TAG = `[${author}/${permlink}]`;
+  const TAG = `[${account.username}: ${author}/${permlink}]`;
   debug(TAG, 'started upvoting');
 
   const blacklisted = await queue.isBlacklisted(author);
