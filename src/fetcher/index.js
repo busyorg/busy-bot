@@ -4,7 +4,7 @@ const retry = require('async-retry');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
 const fetchBatch = require('./fetchBatch');
 
-function createProcessBatch(name, queueUpvote) {
+function createProcessBatch(queue, name, queueUpvote) {
   return async (msg, next, id) => {
     try {
       await retry(
@@ -18,6 +18,7 @@ function createProcessBatch(name, queueUpvote) {
           const postsPromises = posts.map(queueUpvote);
           await Promise.all(postsPromises);
 
+          await queue.rsmq.deleteMessageAsync({ qname: name, id });
           next();
         },
         { retries: 5 },
@@ -28,20 +29,20 @@ function createProcessBatch(name, queueUpvote) {
   };
 }
 
-function worker(rsmq, name, queueUpvote) {
+function worker(queue, name, queueUpvote) {
   const worker = new RSMQWorker(name, {
-    rsmq,
+    rsmq: queue.rsmq,
     timeout: 10000,
   });
-  worker.on('message', createProcessBatch(name, queueUpvote));
+  worker.on('message', createProcessBatch(queue, name, queueUpvote));
   worker.start();
 }
 
 function start(queue) {
   debug('fetcher started');
 
-  worker(queue.rsmq, STREAM_FETCHERS_QUEUE, queue.queueStreamUpvote);
-  worker(queue.rsmq, PAST_FETCHERS_QUEUE, queue.queuePastUpvote);
+  worker(queue, STREAM_FETCHERS_QUEUE, queue.queueStreamUpvote);
+  worker(queue, PAST_FETCHERS_QUEUE, queue.queuePastUpvote);
 }
 
 module.exports = start;
