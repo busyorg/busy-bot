@@ -72,10 +72,10 @@ async function upvotePost(author, permlink, account, queue) {
   }
 }
 
-function createProcessUpvote(queue) {
+function createProcessUpvote(queue, name) {
   const accounts = getAccounts();
 
-  return async (msg, next) => {
+  return async (msg, next, id) => {
     try {
       await retry(
         async () => {
@@ -90,6 +90,8 @@ function createProcessUpvote(queue) {
           const votes = accounts.map(account => upvotePost(author, permlink, account, queue));
 
           await Promise.all(votes);
+
+          await queue.rsmq.deleteMessageAsync({ qname: name, id });
           next();
         },
         { retries: 5 },
@@ -105,7 +107,7 @@ function worker(queue, name) {
     rsmq: queue.rsmq,
     timeout: 30000,
   });
-  streamWorker.on('message', createProcessUpvote(queue));
+  streamWorker.on('message', createProcessUpvote(queue, name));
   streamWorker.start();
 }
 
