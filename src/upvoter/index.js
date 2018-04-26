@@ -32,8 +32,8 @@ function getIsVoted(post, account) {
   return post.active_votes.filter(vote => vote.voter === account.username).length !== 0;
 }
 
-async function upvotePost(author, permlink, account, queue) {
-  const TAG = `[${account.username}: ${author}/${permlink}]`;
+async function upvotePost(name, author, permlink, account, queue) {
+  const TAG = `[${name} - ${account.username}: ${author}/${permlink}]`;
   debug(TAG, 'started upvoting');
 
   const blacklisted = await queue.isBlacklisted(author);
@@ -87,7 +87,7 @@ function createProcessUpvote(queue, name) {
 
           const [author, permlink] = msg.split('/');
 
-          const votes = accounts.map(account => upvotePost(author, permlink, account, queue));
+          const votes = accounts.map(account => upvotePost(name, author, permlink, account, queue));
 
           await Promise.all(votes);
 
