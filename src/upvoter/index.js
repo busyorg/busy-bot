@@ -19,7 +19,7 @@ async function getVoteWeight(username, account) {
 
   if (mvests < account.minVests || mvests > account.limitVests) return 0;
 
-  const percent = parseInt(10000 / account.maxVests * mvests);
+  const percent = parseInt((10000 / account.maxVests) * mvests);
 
   return Math.min(Math.max(percent, account.minPercent), account.maxPercent);
 }
@@ -61,7 +61,7 @@ async function upvotePost(name, author, permlink, account, queue) {
 
   try {
     await steem.broadcast.voteAsync(account.wif, account.username, author, permlink, weight);
-    queue.blacklistUser(post.author, timeSincePost);
+    queue.blacklistUser(post.author);
     debug(TAG, 'upvoted by', account.username, 'with', weight);
   } catch (err) {
     if (err.message.indexOf('STEEM_UPVOTE_LOCKOUT') !== -1) {
