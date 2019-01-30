@@ -14,9 +14,7 @@ steem.api.setOptions({ url: STEEM_API });
 
 async function getVoteWeight(username, account, queue) {
   const cachedVests = await queue.getAccountFollowersVests(username);
-  if (cachedVests) return cachedVests;
-
-  const vests = await getAccountFollowersVests(username);
+  const vests = cachedVests ? cachedVests : await getAccountFollowersVests(username);
 
   await queue.setAccountFollowersVests(username, vests);
 
@@ -48,7 +46,7 @@ async function upvotePost(name, author, permlink, account, queue) {
 
   const [post, weight] = await Promise.all([
     getPost(author, permlink),
-    getVoteWeight(author, account),
+    getVoteWeight(author, account, queue),
   ]);
 
   const timeSincePost = Math.floor(moment().diff(`${post.created}Z`) / 1000);

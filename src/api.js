@@ -4,4 +4,6 @@ const { API } = require('./constants');
 
 bluebird.promisifyAll(Client.prototype);
 
-module.exports = new Client(API);
+module.exports = new Client(API, {
+  timeout: 10000,
+});
