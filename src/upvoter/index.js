@@ -1,10 +1,10 @@
 const moment = require('moment');
 const debug = require('debug')('busy-bot:upvoter');
-const fetch = require('node-fetch');
 const retry = require('async-retry');
 const RSMQWorker = require('rsmq-worker');
 const steem = require('steem');
 const api = require('../api');
+const getAccountFollowersVests = require('./getAccountFollowersVests');
 const getAccounts = require('./getAccounts');
 const { POST_TO_OLD_SECONDS, STREAM_UPVOTERS_QUEUE, PAST_UPVOTERS_QUEUE } = require('../constants');
 
@@ -12,14 +12,17 @@ const STEEM_API = process.env.STEEM_API || 'https://api.steemit.com';
 
 steem.api.setOptions({ url: STEEM_API });
 
-async function getVoteWeight(username, account) {
-  const mvests = await fetch(`https://steemdb.com/api/accounts?account[]=${username}`)
-    .then(res => res.json())
-    .then(res => res[0].followers_mvest);
+async function getVoteWeight(username, account, queue) {
+  const cachedVests = await queue.getAccountFollowersVests(username);
+  if (cachedVests) return cachedVests;
 
-  if (mvests < account.minVests || mvests > account.limitVests) return 0;
+  const vests = await getAccountFollowersVests(username);
 
-  const percent = parseInt((10000 / account.maxVests) * mvests);
+  await queue.setAccountFollowersVests(username, vests);
+
+  if (vests < account.minVests || vests > account.limitVests) return 0;
+
+  const percent = parseInt((10000 / account.maxVests) * vests);
 
   return Math.min(Math.max(percent, account.minPercent), account.maxPercent);
 }

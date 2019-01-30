@@ -10,6 +10,7 @@ const {
   PAST_UPVOTERS_QUEUE,
   UPVOTE_DELAY_SECONDS,
   BLACKLIST_SECONDS,
+  VESTS_CACHE_SECONDS,
 } = require('./constants');
 
 bluebird.promisifyAll(redis.RedisClient.prototype);
@@ -49,6 +50,9 @@ async function createQueue() {
     isBlacklisted: username => client.getAsync(`${username}:voted`),
     setCurrentBlock: block => client.setAsync('current_block', block),
     getCurrentBlock: () => client.getAsync('current_block'),
+    setAccountFollowersVests: (username, vests) =>
+      client.setAsync(`${username}:vests`, vests, 'EX', VESTS_CACHE_SECONDS),
+    getAccountFollowersVests: username => client.getAsync(`${username}:vests`),
     stat: async () => {
       const queues = await rsmq.listQueuesAsync();
       return _.zipObject(

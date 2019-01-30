@@ -1,5 +1,5 @@
 const debug = require('debug')('busy-bot:initializer');
-const { WEEKLY_BLOCKS, SLEEP_TIME } = require('../constants');
+const { DAILY_BLOCKS, SLEEP_TIME } = require('../constants');
 const { sleep } = require('../utils');
 const getLastIrreversibleBlock = require('./getLastIrreversibleBlock');
 const getBatches = require('./getBatches');
@@ -27,7 +27,7 @@ async function processCurrentBlocks(queue, block) {
 }
 
 async function processPastBlocks(queue, lastBlock, savedBlock) {
-  const startBlock = Math.max(lastBlock - WEEKLY_BLOCKS, savedBlock);
+  const startBlock = Math.max(lastBlock - DAILY_BLOCKS, savedBlock);
   const blockCount = lastBlock - startBlock;
 
   const batches = getBatches(startBlock, blockCount);
