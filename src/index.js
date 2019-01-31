@@ -20,11 +20,4 @@ async function start() {
   app.listen(PORT);
 }
 
-// const getAccountFollowersVests = require('./upvoter/getAccountFollowersVests');
-
-// async function start() {
-//   const vests = await getAccountFollowersVests('xyzashu');
-//   console.log(vests);
-// }
-
 start();
