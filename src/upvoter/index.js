@@ -14,9 +14,13 @@ steem.api.setOptions({ url: STEEM_API });
 
 async function getVoteWeight(username, account, queue) {
   const cachedVests = await queue.getAccountFollowersVests(username);
-  const vests = cachedVests ? cachedVests : await getAccountFollowersVests(username);
 
-  await queue.setAccountFollowersVests(username, vests);
+  if (cachedVests) {
+    const vests = cachedVests;
+  } else {
+    const vests = await getAccountFollowersVests(username);
+    await queue.setAccountFollowersVests(username, vests);
+  }
 
   if (vests < account.minVests || vests > account.limitVests) return 0;
 
