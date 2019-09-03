@@ -1,5 +1,5 @@
 module.exports = {
-  API: 'https://anyx.io',
+  API: 'https://api.steemit.com',
   VESTS_CACHE_SECONDS: 3 * 24 * 60 * 60,
   BLACKLIST_SECONDS: 20 * 60 * 60,
   POST_TO_OLD_SECONDS: 6 * 24 * 60 * 60,
