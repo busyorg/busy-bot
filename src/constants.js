@@ -1,10 +1,10 @@
 module.exports = {
-  API: 'https://api.steemit.com',
+  API: 'https://anyx.io',
   VESTS_CACHE_SECONDS: 3 * 24 * 60 * 60,
   BLACKLIST_SECONDS: 20 * 60 * 60,
   POST_TO_OLD_SECONDS: 6 * 24 * 60 * 60,
   SLEEP_TIME: 60 * 1000,
-  UPVOTE_DELAY_SECONDS: 15 * 60,
+  UPVOTE_DELAY_SECONDS: 5 * 60,
   BLOCKS_PER_BATCH: 25,
   DAILY_BLOCKS: 24 * 60 * 20,
   STREAM_FETCHERS_QUEUE: 'STREAM_FETCHERS_QUEUE',
